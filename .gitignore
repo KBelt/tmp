@@ -7,5 +7,3 @@ npm-debug.log
 
 # Exclude real .env files
 .env
-# Don't exclude the symbolic link
-!.env

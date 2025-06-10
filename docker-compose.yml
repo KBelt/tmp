@@ -7,8 +7,15 @@ services:
     depends_on:
       - mongo
       - rabbitmq
-    env_file:
-      - ${ENV_FILE:-.env}
+    environment:
+      - MESSAGE_QUEUE_URL=${MESSAGE_QUEUE_URL:-amqp://rabbitmq:5672}
+      - ITEM_EXCHANGE=${ITEM_EXCHANGE:-itemExchange}
+      - ITEM_SERVICE_QUEUE=${ITEM_SERVICE_QUEUE:-itemServiceQueue}
+      - MONGO_PORT=${MONGO_PORT:-27017}
+      - MONGO_HOST=${MONGO_HOST:-mongo}
+      - DB_ITEM_NAME=${DB_ITEM_NAME:-item}
+      - MONGO_USERNAME=${MONGO_USERNAME:-root}
+      - MONGO_PASSWORD=${MONGO_PASSWORD:-password}
     restart: on-failure
     volumes:
       - /app/node_modules
@@ -21,8 +28,15 @@ services:
     depends_on:
       - mongo
       - rabbitmq
-    env_file:
-      - ${ENV_FILE:-.env}
+    environment:
+      - MESSAGE_QUEUE_URL=${MESSAGE_QUEUE_URL:-amqp://rabbitmq:5672}
+      - ITEM_EXCHANGE=${ITEM_EXCHANGE:-itemExchange}
+      - ITEM_SERVICE_QUEUE=${ITEM_SERVICE_QUEUE:-itemServiceQueue}
+      - MONGO_PORT=${MONGO_PORT:-27017}
+      - MONGO_HOST=${MONGO_HOST:-mongo}
+      - DB_ITEM_NAME=${DB_ITEM_NAME:-item}
+      - MONGO_USERNAME=${MONGO_USERNAME:-root}
+      - MONGO_PASSWORD=${MONGO_PASSWORD:-password}
     restart: on-failure
     volumes:
       - /app/node_modules
