@@ -3,7 +3,7 @@ name: devops_prod
 type: primary
 urlHandle: karstendevops
 environmentVariables:
-  MONGO_PASSWORD: "ENCRYPTED[x3ivKO8F1dc7Yf8i9hhk9Ys91ATLXNdY6iEcj+kaNMRQiHtjTO/s0ArzB6eZ/vOhc+jilZFmNG9hMnI=]"
+  MONGO_PASSWORD: ""
 components:
   - kind: Application
     name: api
@@ -20,7 +20,7 @@ components:
         ITEM_SERVICE_QUEUE: itemServiceQueue
         MESSAGE_QUEUE_URL: "amqp://rabbitmq:5672"
         MONGO_HOST: mongo
-        MONGO_PASSWORD: "${MONGO_PASSWORD}"
+        MONGO_PASSWORD: ${MONGO_PASSWORD}
         MONGO_PORT: "27017"
         MONGO_USERNAME: root
       ports:
@@ -68,7 +68,7 @@ components:
         ITEM_SERVICE_QUEUE: itemServiceQueue
         MESSAGE_QUEUE_URL: "amqp://rabbitmq:5672"
         MONGO_HOST: mongo
-        MONGO_PASSWORD: "${MONGO_PASSWORD}"
+        MONGO_PASSWORD: ${MONGO_PASSWORD}
         MONGO_PORT: "27017"
         MONGO_USERNAME: root
       ports:
@@ -81,7 +81,7 @@ components:
     name: mongo
     dockerCompose:
       environment:
-        MONGO_INITDB_ROOT_PASSWORD: "${MONGO_PASSWORD}"
+        MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
         MONGO_INITDB_ROOT_USERNAME: root
       image: mongo
       ports:
