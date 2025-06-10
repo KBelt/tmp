@@ -3,29 +3,32 @@ const { metrics } = require("../services/metricsService");
 
 // Track queue status periodically
 let channel;
-const startUpdateQueueMetricsInterval =
-  (async () => {
-    try {
-      if (!channel) {
-        channel = await getChannel();
-      }
-
-      // Get queue information
-      const queueName = process.env.ITEM_SERVICE_QUEUE;
-      if (queueName) {
-        const queueInfo = await channel.assertQueue(queueName, {
-          durable: true,
-        });
-        metrics.queueSizeGauge.set(
-          { queue: queueName },
-          queueInfo.messageCount
-        );
-      }
-    } catch (error) {
-      console.error("Failed to update queue metrics:", error.message);
+const updateQueueMetrics = async () => {
+  try {
+    if (!channel) {
+      channel = await getChannel();
     }
-  },
-  5000);
+
+    // Get queue information
+    const queueName = process.env.ITEM_SERVICE_QUEUE;
+    if (queueName) {
+      const queueInfo = await channel.assertQueue(queueName, {
+        durable: true,
+      });
+      metrics.queueSizeGauge.set({ queue: queueName }, queueInfo.messageCount);
+    }
+  } catch (error) {
+    console.error("Failed to update queue metrics:", error.message);
+  }
+};
+
+// Create the interval function that calls the update function
+const startUpdateQueueMetricsInterval = () => {
+  // Call immediately on startup
+  updateQueueMetrics();
+  // Then set interval
+  return setInterval(updateQueueMetrics, 5000);
+};
 
 const consume = async (exchange, queue, routingKey, handler) => {
   try {

@@ -1,8 +1,6 @@
 const express = require("express");
-const {
-  startConsumer,
-  startUpdateQueueMetricsInterval,
-} = require("./messaging/messageHandler");
+const { startConsumer } = require("./messaging/messageHandler");
+const { startUpdateQueueMetricsInterval } = require("./messaging/consumer");
 const { connect } = require("./database/database");
 const { createMetricsMiddleware } = require("./services/metricsService");
 

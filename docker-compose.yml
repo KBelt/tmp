@@ -74,7 +74,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # Add Prometheus service
+  # Prometheus for monitoring
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -91,7 +91,7 @@ services:
       - "--web.enable-lifecycle"
     restart: unless-stopped
 
-  # Add Grafana for visualization
+  # Grafana for visualization
   grafana:
     build: ./grafana
     container_name: grafana
