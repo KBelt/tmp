@@ -108,6 +108,7 @@ services:
 volumes:
   mongo-data:
   prometheus_data:
+  grafana_data:
 
 networks:
   default:

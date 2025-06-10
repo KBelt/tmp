@@ -1,0 +1,164 @@
+kind: Environment
+name: devops_prod
+type: primary
+urlHandle: karstendevops
+variables:
+  - name: MONGO_PASSWORD
+    value: password
+    type: string
+    secret: true
+components:
+  - kind: Application
+    name: api
+    gitRepo: "https://github.com/KBelt/tmp.git"
+    gitBranch: main
+    gitApplicationPath: services/api
+    dockerCompose:
+      build:
+        context: ./services/api
+        dockerfile: Dockerfile
+      environment:
+        DB_ITEM_NAME: item
+        ITEM_EXCHANGE: itemExchange
+        ITEM_SERVICE_QUEUE: itemServiceQueue
+        MESSAGE_QUEUE_URL: "amqp://rabbitmq:5672"
+        MONGO_HOST: mongo
+        MONGO_PASSWORD: "{{ env.MONGO_PASSWORD }}"
+        MONGO_PORT: "27017"
+        MONGO_USERNAME: root
+      ports:
+        - "3001:3000"
+    hosts:
+      - hostname: "api-{{ env.base_domain }}"
+        path: /
+        servicePort: 3001
+  - kind: Application
+    name: grafana
+    gitRepo: "https://github.com/KBelt/tmp.git"
+    gitBranch: main
+    gitApplicationPath: grafana
+    dockerCompose:
+      build:
+        context: ./grafana
+        dockerfile: Dockerfile
+      environment:
+        GF_SECURITY_ADMIN_PASSWORD: admin
+        GF_SECURITY_ADMIN_USER: admin
+        GF_USERS_ALLOW_SIGN_UP: "false"
+      ports:
+        - "3000:3000"
+      restart: unless-stopped
+    volumes:
+      - name: grafana-data
+        mount: /var/lib/grafana
+        subPath: ""
+    hosts:
+      - hostname: "grafana-{{ env.base_domain }}"
+        path: /
+        servicePort: 3000
+  - kind: Application
+    name: item-service
+    gitRepo: "https://github.com/KBelt/tmp.git"
+    gitBranch: main
+    gitApplicationPath: services/item-service
+    dockerCompose:
+      build:
+        context: ./services/item-service
+        dockerfile: Dockerfile
+      environment:
+        DB_ITEM_NAME: item
+        ITEM_EXCHANGE: itemExchange
+        ITEM_SERVICE_QUEUE: itemServiceQueue
+        MESSAGE_QUEUE_URL: "amqp://rabbitmq:5672"
+        MONGO_HOST: mongo
+        MONGO_PASSWORD: "{{ env.MONGO_PASSWORD }}"
+        MONGO_PORT: "27017"
+        MONGO_USERNAME: root
+      ports:
+        - "3002:3000"
+    hosts:
+      - hostname: "item-service-{{ env.base_domain }}"
+        path: /
+        servicePort: 3002
+  - kind: Database
+    name: mongo
+    dockerCompose:
+      environment:
+        MONGO_INITDB_ROOT_PASSWORD: "{{ env.MONGO_PASSWORD }}"
+        MONGO_INITDB_ROOT_USERNAME: root
+      image: mongo
+      ports:
+        - "27017:27017"
+    volumes:
+      - name: mongo-data
+        mount: /data/db
+        subPath: ""
+  - kind: Database
+    name: mongodb-exporter
+    dockerCompose:
+      command:
+        - "--mongodb.uri=mongodb://root:{{ env.MONGO_PASSWORD }}@mongo:27017"
+      image: "percona/mongodb_exporter:0.40"
+      ports:
+        - "9216:9216"
+  - kind: Application
+    name: prometheus
+    gitRepo: "https://github.com/KBelt/tmp.git"
+    gitBranch: main
+    gitApplicationPath: prometheus
+    dockerCompose:
+      build:
+        context: ./prometheus
+        dockerfile: Dockerfile
+      command:
+        - "--config.file=/etc/prometheus/prometheus.yml"
+        - "--storage.tsdb.path=/prometheus"
+        - "--web.console.libraries=/etc/prometheus/console_libraries"
+        - "--web.console.templates=/etc/prometheus/consoles"
+        - "--web.enable-lifecycle"
+      ports:
+        - "9090:9090"
+      restart: unless-stopped
+    hosts:
+      - hostname: "prometheus-{{ env.base_domain }}"
+        path: /
+        servicePort: 9090
+    volumes:
+      - name: prometheus-data
+        mount: /prometheus
+        subPath: ""
+  - kind: Service
+    name: rabbitmq
+    dockerCompose:
+      environment:
+        RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit frame_max 131072"
+      healthcheck:
+        test:
+          - CMD
+          - rabbitmqctl
+          - status
+        timeout: 10s
+        interval: 30s
+        retries: 5
+      image: "rabbitmq:management"
+      ports:
+        - "4369:4369"
+        - "5671:5671"
+        - "5672:5672"
+        - "25672:25672"
+        - "15671:15671"
+        - "15672:15672"
+    hosts:
+      - hostname: "rabbitmq-{{ env.base_domain }}"
+        path: /
+        servicePort: 5672
+volumes:
+  - name: mongo-data
+    size: 1Gi
+    type: disk
+  - name: prometheus-data
+    size: 1Gi
+    type: disk
+  - name: grafana-data
+    size: 1Gi
+    type: disk
