@@ -1,3 +1,3 @@
 FROM grafana/grafana:latest
 
-COPY . /etc/grafana/
+COPY . /var/lib/grafana/
