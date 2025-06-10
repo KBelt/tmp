@@ -104,6 +104,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     restart: unless-stopped
+    volumes:
+      - grafana_data:/var/lib/grafana
 
 volumes:
   mongo-data:
