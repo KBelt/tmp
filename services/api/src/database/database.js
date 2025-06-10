@@ -21,6 +21,7 @@ let client;
 
 async function connect() {
   console.log("Connecting to database");
+  console.log(`MongoDB URI: ${uri}`);
 
   client = new MongoClient(uri);
 
