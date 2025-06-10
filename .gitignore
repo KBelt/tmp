@@ -1,7 +1,11 @@
 node_modules
 build
 npm-debug.log
-.env
 .DS_Store
 /services/api/coverage
 /services/item-service/coverage
+
+# Exclude real .env files
+.env
+# Don't exclude the symbolic link
+!.env
