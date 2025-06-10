@@ -2,11 +2,8 @@ kind: Environment
 name: devops_prod
 type: primary
 urlHandle: karstendevops
-variables:
-  - name: MONGO_PASSWORD
-    value: password
-    type: string
-    secret: true
+environmentVariables:
+  MONGO_PASSWORD: "ENCRYPTED[x3ivKO8F1dc7Yf8i9hhk9Ys91ATLXNdY6iEcj+kaNMRQiHtjTO/s0ArzB6eZ/vOhc+jilZFmNG9hMnI=]"
 components:
   - kind: Application
     name: api
@@ -23,7 +20,7 @@ components:
         ITEM_SERVICE_QUEUE: itemServiceQueue
         MESSAGE_QUEUE_URL: "amqp://rabbitmq:5672"
         MONGO_HOST: mongo
-        MONGO_PASSWORD: "{{ env.MONGO_PASSWORD }}"
+        MONGO_PASSWORD: "${MONGO_PASSWORD}"
         MONGO_PORT: "27017"
         MONGO_USERNAME: root
       ports:
@@ -48,14 +45,14 @@ components:
       ports:
         - "3000:3000"
       restart: unless-stopped
-    volumes:
-      - name: grafana-data
-        mount: /var/lib/grafana
-        subPath: ""
     hosts:
       - hostname: "grafana-{{ env.base_domain }}"
         path: /
         servicePort: 3000
+    volumes:
+      - name: grafana-data
+        mount: /var/lib/grafana
+        subPath: ""
   - kind: Application
     name: item-service
     gitRepo: "https://github.com/KBelt/tmp.git"
@@ -71,7 +68,7 @@ components:
         ITEM_SERVICE_QUEUE: itemServiceQueue
         MESSAGE_QUEUE_URL: "amqp://rabbitmq:5672"
         MONGO_HOST: mongo
-        MONGO_PASSWORD: "{{ env.MONGO_PASSWORD }}"
+        MONGO_PASSWORD: "${MONGO_PASSWORD}"
         MONGO_PORT: "27017"
         MONGO_USERNAME: root
       ports:
@@ -84,7 +81,7 @@ components:
     name: mongo
     dockerCompose:
       environment:
-        MONGO_INITDB_ROOT_PASSWORD: "{{ env.MONGO_PASSWORD }}"
+        MONGO_INITDB_ROOT_PASSWORD: "${MONGO_PASSWORD}"
         MONGO_INITDB_ROOT_USERNAME: root
       image: mongo
       ports:
@@ -97,7 +94,7 @@ components:
     name: mongodb-exporter
     dockerCompose:
       command:
-        - "--mongodb.uri=mongodb://root:{{ env.MONGO_PASSWORD }}@mongo:27017"
+        - "--mongodb.uri=mongodb://root:${MONGO_PASSWORD}@mongo:27017"
       image: "percona/mongodb_exporter:0.40"
       ports:
         - "9216:9216"
