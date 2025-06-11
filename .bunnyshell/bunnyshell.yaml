@@ -3,7 +3,7 @@ name: devops_preview
 type: primary
 urlHandle: karstendevopspreview
 environmentVariables:
-  MONGO_PASSWORD: "{{ env.MONGO_PASSWORD }}"
+  MONGO_PASSWORD: "preview-env-password-789"
 components:
   - kind: Application
     name: api
@@ -55,7 +55,7 @@ components:
     name: mongo
     dockerCompose:
       environment:
-        MONGO_INITDB_ROOT_PASSWORD: "{{ env.MONGO_PASSWORD }}"
+        MONGO_INITDB_ROOT_PASSWORD: "preview-env-password-789"
         MONGO_INITDB_ROOT_USERNAME: root
       image: mongo
       ports:
