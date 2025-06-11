@@ -4,6 +4,4 @@ npm-debug.log
 .DS_Store
 /services/api/coverage
 /services/item-service/coverage
-
-# Exclude real .env files
 .env

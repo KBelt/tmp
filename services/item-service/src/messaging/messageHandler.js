@@ -5,7 +5,13 @@ const { metrics } = require("../services/metricsService");
 async function handleMessage(msg) {
   const startTime = Date.now();
 
-  let data = JSON.parse(msg);
+  let data;
+  try {
+    data = JSON.parse(msg);
+  } catch (parseError) {
+    console.error("Error parsing message JSON:", parseError);
+    throw parseError;
+  }
 
   // Extract name and message with safe fallbacks
   const name = data.name || (data.value && data.value.name) || "Unknown";

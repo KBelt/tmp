@@ -6,13 +6,11 @@ on:
     paths:
       - "services/item-service/**"
       - ".github/workflows/item-service-test.yml"
-      - "README.md"
   pull_request:
     branches: [main]
     paths:
       - "services/item-service/**"
       - ".github/workflows/item-service-test.yml"
-      - "README.md"
   repository_dispatch:
     types: [run-item-service-tests]
 

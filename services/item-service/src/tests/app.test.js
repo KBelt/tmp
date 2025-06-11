@@ -31,12 +31,11 @@ describe("Message Handler", () => {
       const mockItem = { name: "Test Item", message: "This is a test message" };
       createItem.mockResolvedValue(mockItem);
 
-      const mockMessage = {
-        value: JSON.stringify({
-          name: "Test Item",
-          message: "This is a test message",
-        }),
-      };
+      // Use a JSON string as the message (now without the value property wrapper)
+      const mockMessage = JSON.stringify({
+        name: "Test Item",
+        message: "This is a test message",
+      });
 
       // Act
       await handleMessage(mockMessage);
@@ -53,15 +52,20 @@ describe("Message Handler", () => {
       );
     });
 
-    it("should handle non-JSON messages", async () => {
+    it("should handle pre-parsed JSON messages", async () => {
       // Arrange
       const mockItem = { name: "Test Item", message: "This is a test message" };
       createItem.mockResolvedValue(mockItem);
 
-      const mockMessage = {
+      // Mock JSON.parse to return the object when called
+      const originalJsonParse = JSON.parse;
+      JSON.parse = jest.fn().mockImplementation(() => ({
         name: "Test Item",
         message: "This is a test message",
-      };
+      }));
+
+      // Create a mock message string (content doesn't matter as we're mocking the parse)
+      const mockMessage = "dummy-message";
 
       // Act
       await handleMessage(mockMessage);
@@ -71,6 +75,9 @@ describe("Message Handler", () => {
         "Test Item",
         "This is a test message"
       );
+
+      // Restore original JSON.parse after the test
+      JSON.parse = originalJsonParse;
     });
 
     it("should handle errors when creating an item", async () => {
@@ -78,12 +85,11 @@ describe("Message Handler", () => {
       const error = new Error("Database error");
       createItem.mockRejectedValue(error);
 
-      const mockMessage = {
-        value: JSON.stringify({
-          name: "Test Item",
-          message: "This is a test message",
-        }),
-      };
+      // Use a JSON string as the message (now without the value property wrapper)
+      const mockMessage = JSON.stringify({
+        name: "Test Item",
+        message: "This is a test message",
+      });
 
       // Act & Assert
       // Use expect().rejects to assert that the function rejects with the error
@@ -97,6 +103,31 @@ describe("Message Handler", () => {
         "This is a test message"
       );
       expect(console.error).toHaveBeenCalledWith("Error creating item:", error);
+    });
+
+    it("should handle malformed JSON gracefully", async () => {
+      // Arrange
+      const mockItem = { name: "Unknown", message: "No message" };
+      createItem.mockResolvedValue(mockItem);
+
+      // Mock console.error to check for JSON parse error
+      const mockConsoleError = jest.fn();
+      console.error = mockConsoleError;
+
+      // Create an invalid JSON string that will cause JSON.parse to throw
+      const mockMessage = "this is not valid JSON";
+
+      // Act
+      try {
+        await handleMessage(mockMessage);
+        fail("Expected an error to be thrown");
+      } catch (err) {
+        // Assert error is a SyntaxError from JSON parsing
+        expect(err instanceof SyntaxError).toBe(true);
+      }
+
+      // Restore console.error
+      console.error.mockRestore();
     });
   });
 });
