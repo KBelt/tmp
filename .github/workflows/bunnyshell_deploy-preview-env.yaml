@@ -1,0 +1,54 @@
+name: Bunnyshell - Deploy Preview Environment
+on:
+  workflow_run:
+    workflows:
+      - "Bunnyshell - Prepare Preview Environment Configuration"
+    types:
+      - completed
+permissions:
+  pull-requests: write
+jobs:
+  load-artifact-from-reusable:
+    name: Load artifact values
+    uses: bunnyshell/workflows/.github/workflows/load-artifact.yaml@v2
+    with:
+      workflow_run_id: ${{ github.event.workflow_run.id }}
+
+  prepare-config:
+    name: Prepare Bunnyshell Config
+    needs: load-artifact-from-reusable
+    runs-on: ubuntu-latest
+    outputs:
+      modified-yaml: ${{ steps.modify-yaml.outputs.yaml }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && needs.load-artifact-from-reusable.outputs.skip-deployment == 'false' }}
+    steps:
+      - name: Generate Random Password
+        id: password
+        run: |
+          RANDOM_PASSWORD=$(openssl rand -base64 12)
+          echo "PASSWORD=$RANDOM_PASSWORD" >> $GITHUB_OUTPUT
+
+      - name: Modify Bunnyshell YAML
+        id: modify-yaml
+        env:
+          ORIGINAL_YAML: ${{ needs.load-artifact-from-reusable.outputs.bunnyshell-yaml-contents }}
+        run: |
+          echo "$ORIGINAL_YAML" | sed "s/{{ env.MONGO_PASSWORD }}/${{ steps.password.outputs.PASSWORD }}/g" > modified-bunnyshell.yaml
+          MODIFIED_YAML=$(cat modified-bunnyshell.yaml | base64 -w 0)
+          echo "yaml=$MODIFIED_YAML" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy Environment
+    needs: load-artifact-from-reusable
+    uses: bunnyshell/workflows/.github/workflows/deploy-env.yaml@v2
+    concurrency: bns-deploy-${{ needs.load-artifact-from-reusable.outputs.pr-number }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && needs.load-artifact-from-reusable.outputs.skip-deployment == 'false' }}
+    with:
+      pr-number: ${{ needs.load-artifact-from-reusable.outputs.pr-number }}
+      project-id: "Z9rDV3bXAb"
+      cluster-id: "LENQxkjMm6"
+      env-name: "Demo PR #${{ needs.load-artifact-from-reusable.outputs.pr-number }}"
+      bunnyshell-yaml-contents: ${{ needs.load-artifact-from-reusable.outputs.bunnyshell-yaml-contents }}
+      comment-on-pr: true
+    secrets:
+      bunnyshell-access-token: ${{ secrets.BUNNYSHELL_ACCESS_TOKEN }}

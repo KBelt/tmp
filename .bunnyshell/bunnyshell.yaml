@@ -3,7 +3,7 @@ name: devops_prod
 type: primary
 urlHandle: karstendevops
 environmentVariables:
-  MONGO_PASSWORD: "ENCRYPTED[mDX2+MlGuwNfls4oRGsw8I1c7SD/znYszVIfl2of0bAMhAMl7J/ghMuipqfilZFmNG9hMnI=]"
+  MONGO_PASSWORD: "{{ env.MONGO_PASSWORD }}"
 components:
   - kind: Application
     name: api
@@ -28,30 +28,6 @@ components:
       - hostname: "api-{{ env.base_domain }}"
         path: /
         servicePort: 80
-  - kind: Application
-    name: grafana
-    gitRepo: "https://github.com/KBelt/tmp.git"
-    gitBranch: main
-    gitApplicationPath: grafana
-    dockerCompose:
-      build:
-        context: ./grafana
-        dockerfile: Dockerfile
-      environment:
-        GF_SECURITY_ADMIN_PASSWORD: admin
-        GF_SECURITY_ADMIN_USER: admin
-        GF_USERS_ALLOW_SIGN_UP: "false"
-      ports:
-        - "3000:3000"
-      restart: unless-stopped
-    hosts:
-      - hostname: "grafana-{{ env.base_domain }}"
-        path: /
-        servicePort: 3000
-    volumes:
-      - name: grafana-data
-        mount: /var/lib/grafana
-        subPath: ""
   - kind: Application
     name: item-service
     gitRepo: "https://github.com/KBelt/tmp.git"
@@ -79,7 +55,7 @@ components:
     name: mongo
     dockerCompose:
       environment:
-        MONGO_INITDB_ROOT_PASSWORD: TempPassword335z
+        MONGO_INITDB_ROOT_PASSWORD: "{{ env.MONGO_PASSWORD }}"
         MONGO_INITDB_ROOT_USERNAME: root
       image: mongo
       ports:
@@ -87,40 +63,6 @@ components:
     volumes:
       - name: mongo-data
         mount: /data/db
-        subPath: ""
-  - kind: Database
-    name: mongodb-exporter
-    dockerCompose:
-      command:
-        - "--mongodb.uri=mongodb://root:{{ MONGO_PASSWORD }}@mongo:27017"
-      image: "percona/mongodb_exporter:0.40"
-      ports:
-        - "9216:9216"
-  - kind: Application
-    name: prometheus
-    gitRepo: "https://github.com/KBelt/tmp.git"
-    gitBranch: main
-    gitApplicationPath: prometheus
-    dockerCompose:
-      build:
-        context: ./prometheus
-        dockerfile: Dockerfile
-      command:
-        - "--config.file=/etc/prometheus/prometheus.yml"
-        - "--storage.tsdb.path=/prometheus"
-        - "--web.console.libraries=/etc/prometheus/console_libraries"
-        - "--web.console.templates=/etc/prometheus/consoles"
-        - "--web.enable-lifecycle"
-      ports:
-        - "9090:9090"
-      restart: unless-stopped
-    hosts:
-      - hostname: "prometheus-{{ env.base_domain }}"
-        path: /
-        servicePort: 9090
-    volumes:
-      - name: prometheus-data
-        mount: /prometheus
         subPath: ""
   - kind: Service
     name: rabbitmq
