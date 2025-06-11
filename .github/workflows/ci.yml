@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -91,7 +94,6 @@ jobs:
         run: |
           echo "# API Service" > ./services/api/README.md
           echo "" >> ./services/api/README.md
-          # Add specific labels to distinguish between Tests and Lint badges
           echo "[![API Tests](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=API%20Tests)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/api/README.md
           echo "[![API Lint](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=API%20Lint)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/api/README.md
           echo "[![Docker Build](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=Docker%20Build)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/api/README.md
@@ -100,7 +102,6 @@ jobs:
         run: |
           echo "# Item Service" > ./services/item-service/README.md
           echo "" >> ./services/item-service/README.md
-          # Add specific labels to distinguish between Tests and Lint badges
           echo "[![Item Service Tests](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=Item%20Service%20Tests)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/item-service/README.md
           echo "[![Item Service Lint](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=Item%20Service%20Lint)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/item-service/README.md
           echo "[![Docker Build](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=Docker%20Build)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/item-service/README.md
