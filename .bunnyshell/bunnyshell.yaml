@@ -3,7 +3,7 @@ name: devops_prod
 type: primary
 urlHandle: karstendevops
 environmentVariables:
-  MONGODB_PASSWORD: ""
+  MONGO_PASSWORD: "ENCRYPTED[mDX2+MlGuwNfls4oRGsw8I1c7SD/znYszVIfl2of0bAMhAMl7J/ghMuipqfilZFmNG9hMnI=]"
 components:
   - kind: Application
     name: api
@@ -20,15 +20,14 @@ components:
         ITEM_SERVICE_QUEUE: itemServiceQueue
         MESSAGE_QUEUE_URL: "amqp://rabbitmq:5672"
         MONGO_HOST: mongo
-        MONGO_PASSWORD: ${MONGODB_PASSWORD}
         MONGO_PORT: "27017"
         MONGO_USERNAME: root
       ports:
-        - "3001:3000"
+        - "80:3000"
     hosts:
       - hostname: "api-{{ env.base_domain }}"
         path: /
-        servicePort: 3001
+        servicePort: 80
   - kind: Application
     name: grafana
     gitRepo: "https://github.com/KBelt/tmp.git"
@@ -68,20 +67,19 @@ components:
         ITEM_SERVICE_QUEUE: itemServiceQueue
         MESSAGE_QUEUE_URL: "amqp://rabbitmq:5672"
         MONGO_HOST: mongo
-        MONGO_PASSWORD: ${MONGODB_PASSWORD}
         MONGO_PORT: "27017"
         MONGO_USERNAME: root
       ports:
-        - "3002:3000"
+        - "80:3000"
     hosts:
       - hostname: "item-service-{{ env.base_domain }}"
         path: /
-        servicePort: 3002
+        servicePort: 80
   - kind: Database
     name: mongo
     dockerCompose:
       environment:
-        MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+        MONGO_INITDB_ROOT_PASSWORD: TempPassword335z
         MONGO_INITDB_ROOT_USERNAME: root
       image: mongo
       ports:
@@ -94,7 +92,7 @@ components:
     name: mongodb-exporter
     dockerCompose:
       command:
-        - "--mongodb.uri=mongodb://root:${MONGODB_PASSWORD}@mongo:27017"
+        - "--mongodb.uri=mongodb://root:{{ MONGO_PASSWORD }}@mongo:27017"
       image: "percona/mongodb_exporter:0.40"
       ports:
         - "9216:9216"
@@ -145,6 +143,7 @@ components:
         - "25672:25672"
         - "15671:15671"
         - "15672:15672"
+        - "15692:15692"
     hosts:
       - hostname: "rabbitmq-{{ env.base_domain }}"
         path: /
