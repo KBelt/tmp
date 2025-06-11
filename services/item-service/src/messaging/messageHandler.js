@@ -20,6 +20,7 @@ async function handleMessage(msg) {
   // save the item to the database
   try {
     const item = await createItem(name, message);
+    console.log(item); // temporary log for debugging
     console.log(
       `Create item for name: '${item.name}' with message '${item.message}'`
     );
