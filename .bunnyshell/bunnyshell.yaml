@@ -1,7 +1,7 @@
 kind: Environment
-name: devops_prod
+name: devops_preview
 type: primary
-urlHandle: karstendevops
+urlHandle: karstendevopspreview
 environmentVariables:
   MONGO_PASSWORD: "{{ env.MONGO_PASSWORD }}"
 components:

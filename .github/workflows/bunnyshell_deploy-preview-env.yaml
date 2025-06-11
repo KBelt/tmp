@@ -25,7 +25,7 @@ jobs:
       - name: Generate Random Password
         id: password
         run: |
-          RANDOM_PASSWORD=$(openssl rand -base64 12)
+          RANDOM_PASSWORD=$(openssl rand -base64 12 | tr -d '/+=' | head -c 16)
           echo "PASSWORD=$RANDOM_PASSWORD" >> $GITHUB_OUTPUT
 
       - name: Modify Bunnyshell YAML
@@ -33,10 +33,9 @@ jobs:
         env:
           ORIGINAL_YAML: ${{ needs.load-artifact-from-reusable.outputs.bunnyshell-yaml-contents }}
         run: |
-          echo "$ORIGINAL_YAML" | sed "s/{{ env.MONGO_PASSWORD }}/${{ steps.password.outputs.PASSWORD }}/g" > modified-bunnyshell.yaml
+          echo "$ORIGINAL_YAML" | sed "s|{{ env.MONGO_PASSWORD }}|${{ steps.password.outputs.PASSWORD }}|g" > modified-bunnyshell.yaml
           MODIFIED_YAML=$(cat modified-bunnyshell.yaml | base64 -w 0)
           echo "yaml=$MODIFIED_YAML" >> $GITHUB_OUTPUT
-
   deploy:
     name: Deploy Environment
     needs: load-artifact-from-reusable
