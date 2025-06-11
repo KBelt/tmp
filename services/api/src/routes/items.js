@@ -38,14 +38,14 @@ router.post("/", async (req, res) => {
   try {
     await publish(process.env.ITEM_EXCHANGE, "item.created", item);
   } catch (error) {
-    // console.error("Error publishing item:", error);
+    console.error("Error publishing item:", error);
     return res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to publish item",
     });
   }
 
-  // Simulating a successful response
+  // Return a success response
   return res.status(StatusCode.CREATED).json({
     success: true,
     message: "Item created successfully",

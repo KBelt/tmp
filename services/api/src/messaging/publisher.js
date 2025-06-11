@@ -36,7 +36,9 @@ const publish = async function publish(exchange, routingKey, msg) {
           console.log("Error in confirm:", err);
         } else {
           console.log(
-            `Message confirmed. routing key: ${routingKey}, exchange: ${exchange}`
+            `Message confirmed. routing key: ${routingKey}, exchange: ${exchange}, message: ${JSON.stringify(
+              msg
+            )}`
           );
         }
       }

@@ -1,6 +1,6 @@
 FROM grafana/grafana:latest
 
-COPY ./config.ini /etc/grafana/
+COPY ./config.ini /etc/grafana/grafana.ini
 COPY ./datasources /etc/grafana/provisioning/datasources/
 COPY ./dashboards /etc/grafana/provisioning/dashboards/
 
