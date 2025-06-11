@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
   if (!item || !item.name || !item.message) {
     return res.status(StatusCode.BAD_REQUEST).json({
       success: false,
-      message: "Invalid item data",
+      message: "Invalid item data haha this is a preview",
     });
   }
 
