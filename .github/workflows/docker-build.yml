@@ -3,8 +3,16 @@ name: Docker Build
 on:
   push:
     branches: [main]
+    paths:
+      - "services/api/**"
+      - "services/item-service/**"
+      - ".github/workflows/docker-build.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "services/api/**"
+      - "services/item-service/**"
+      - ".github/workflows/docker-build.yml"
   workflow_run:
     workflows:
       - API Lint

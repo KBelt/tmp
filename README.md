@@ -11,8 +11,6 @@ Karsten Belt's submission for DevOps
 
 ## Architecture
 
-## Architecture
-
 - API service: Handles HTTP requests and publishes messages
 - Item service: Processes messages and stores data in MongoDB
 - MongoDB: Database for persistent storage

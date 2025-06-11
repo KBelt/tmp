@@ -5,10 +5,16 @@ on:
     branches: [main]
     paths:
       - "services/api/**"
+      - ".github/workflows/api-test.yml"
+      - "README.md"
   pull_request:
     branches: [main]
     paths:
       - "services/api/**"
+      - ".github/workflows/api-test.yml"
+      - "README.md"
+  repository_dispatch:
+    types: [run-api-tests]
 
 jobs:
   test-api:
