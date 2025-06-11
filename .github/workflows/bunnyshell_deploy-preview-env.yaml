@@ -36,9 +36,10 @@ jobs:
           echo "$ORIGINAL_YAML" | sed "s|{{ env.MONGO_PASSWORD }}|${{ steps.password.outputs.PASSWORD }}|g" > modified-bunnyshell.yaml
           MODIFIED_YAML=$(cat modified-bunnyshell.yaml | base64 -w 0)
           echo "yaml=$MODIFIED_YAML" >> $GITHUB_OUTPUT
+
   deploy:
     name: Deploy Environment
-    needs: load-artifact-from-reusable
+    needs: [load-artifact-from-reusable, prepare-config]
     uses: bunnyshell/workflows/.github/workflows/deploy-env.yaml@v2
     concurrency: bns-deploy-${{ needs.load-artifact-from-reusable.outputs.pr-number }}
     if: ${{ github.event.workflow_run.conclusion == 'success' && needs.load-artifact-from-reusable.outputs.skip-deployment == 'false' }}
@@ -47,7 +48,7 @@ jobs:
       project-id: "Z9rDV3bXAb"
       cluster-id: "LENQxkjMm6"
       env-name: "Demo PR #${{ needs.load-artifact-from-reusable.outputs.pr-number }}"
-      bunnyshell-yaml-contents: ${{ needs.load-artifact-from-reusable.outputs.bunnyshell-yaml-contents }}
+      bunnyshell-yaml-contents: ${{ needs.prepare-config.outputs.modified-yaml }}
       comment-on-pr: true
     secrets:
       bunnyshell-access-token: ${{ secrets.BUNNYSHELL_ACCESS_TOKEN }}
