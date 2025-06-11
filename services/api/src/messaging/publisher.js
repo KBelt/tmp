@@ -45,7 +45,9 @@ const publish = async function publish(exchange, routingKey, msg) {
     );
 
     console.log(
-      `Message published successfully. routing key: ${routingKey}, exchange: ${exchange}`
+      `Message published successfully. routing key: ${routingKey}, exchange: ${exchange}, message: ${JSON.stringify(
+        msg
+      )}`
     );
   } catch (error) {
     console.log("Error in publish:", error);

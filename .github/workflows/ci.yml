@@ -106,6 +106,7 @@ jobs:
   update-readme-badges:
     runs-on: ubuntu-latest
     if: always()
+    needs: [lint-api, lint-item-service, test-api, test-item-service]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -114,19 +115,35 @@ jobs:
       - name: Update README badges
         run: |
           REPO="${{ github.repository }}"
-          REPO_ESC="${REPO//\//\\/}"
 
-          # Update API Tests badge
-          perl -i -pe 'BEGIN{undef $/;} s/(API Service\s*\|).*?(\|.*?\n)/$1 [![API Tests](https:\/\/github.com\/'"$REPO_ESC"'\/actions\/workflows\/ci.yml\/badge.svg)](https:\/\/github.com\/'"$REPO_ESC"'\/actions\/workflows\/ci.yml) $2/gs' README.md
+          # Replace the entire table with a correctly formatted one
+          awk -v repo="$REPO" '
+          BEGIN { in_table = 0 }
 
-          # Update API Lint badge
-          perl -i -pe 'BEGIN{undef $/;} s/(API Service.*?\|).*?(\n)/$1 [![API Lint](https:\/\/github.com\/'"$REPO_ESC"'\/actions\/workflows\/ci.yml\/badge.svg)](https:\/\/github.com\/'"$REPO_ESC"'\/actions\/workflows\/ci.yml) $2/gs' README.md
+          /^## Service Status/ {
+            print $0
+            print ""
+            print "| Service      | Tests                                                                                            | Lint                                                                                            |"
+            print "| ------------ | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |"
+            print "| API Service  | [![API Tests](https://github.com/" repo "/actions/workflows/ci.yml/badge.svg?event=push&job=test-api)](https://github.com/" repo "/actions/workflows/ci.yml) | [![API Lint](https://github.com/" repo "/actions/workflows/ci.yml/badge.svg?event=push&job=lint-api)](https://github.com/" repo "/actions/workflows/ci.yml) |"
+            print "| Item Service | [![Item Tests](https://github.com/" repo "/actions/workflows/ci.yml/badge.svg?event=push&job=test-item-service)](https://github.com/" repo "/actions/workflows/ci.yml) | [![Item Lint](https://github.com/" repo "/actions/workflows/ci.yml/badge.svg?event=push&job=lint-item-service)](https://github.com/" repo "/actions/workflows/ci.yml) |"
+            in_table = 1
+            next
+          }
 
-          # Update Item Service Tests badge
-          perl -i -pe 'BEGIN{undef $/;} s/(Item Service\s*\|).*?(\|.*?\n)/$1 [![Item Tests](https:\/\/github.com\/'"$REPO_ESC"'\/actions\/workflows\/ci.yml\/badge.svg)](https:\/\/github.com\/'"$REPO_ESC"'\/actions\/workflows\/ci.yml) $2/gs' README.md
+          /^## Architecture/ {
+            in_table = 0
+            print ""
+            print $0
+          }
 
-          # Update Item Service Lint badge
-          perl -i -pe 'BEGIN{undef $/;} s/(Item Service.*?\|).*?(\n)/$1 [![Item Lint](https:\/\/github.com\/'"$REPO_ESC"'\/actions\/workflows\/ci.yml\/badge.svg)](https:\/\/github.com\/'"$REPO_ESC"'\/actions\/workflows\/ci.yml) $2/gs' README.md
+          !in_table { print $0 }
+
+          ' README.md > README.md.new
+
+          mv README.md.new README.md
+
+          cat README.md
 
       - name: Commit README changes
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

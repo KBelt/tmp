@@ -5,22 +5,16 @@ const { metrics } = require("../services/metricsService");
 async function handleMessage(msg) {
   const startTime = Date.now();
 
-  // Try to parse message.value
-  let data;
-  try {
-    data = JSON.parse(msg.value);
-  } catch (error) {
-    // If parsing fails, use message
-    data = msg;
-  }
+  let data = JSON.parse(msg);
 
-  // get the name and message from the message
-  const { name, message } = data;
+  // Extract name and message with safe fallbacks
+  const name = data.name || (data.value && data.value.name) || "Unknown";
+  const message =
+    data.message || (data.value && data.value.message) || "No message";
 
   // save the item to the database
   try {
     const item = await createItem(name, message);
-    console.log(item); // temporary log for debugging
     console.log(
       `Create item for name: '${item.name}' with message '${item.message}'`
     );
