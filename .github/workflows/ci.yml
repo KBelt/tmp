@@ -112,12 +112,28 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
+      - name: Get job statuses
+        id: statuses
+        run: |
+          # Set statuses based on job needs context
+          # These will return 'success', 'failure', etc.
+          echo "api_lint_status=${{ needs.lint-api.result }}" >> $GITHUB_OUTPUT
+          echo "item_lint_status=${{ needs.lint-item-service.result }}" >> $GITHUB_OUTPUT
+          echo "api_test_status=${{ needs.test-api.result }}" >> $GITHUB_OUTPUT
+          echo "item_test_status=${{ needs.test-item-service.result }}" >> $GITHUB_OUTPUT
+
       - name: Update README badges
         run: |
           REPO="${{ github.repository }}"
 
-          # Replace the entire table with a correctly formatted one
-          awk -v repo="$REPO" '
+          # Set colors based on job statuses
+          API_LINT_COLOR="${{ steps.statuses.outputs.api_lint_status == 'success' && 'success' || 'critical' }}"
+          ITEM_LINT_COLOR="${{ steps.statuses.outputs.item_lint_status == 'success' && 'success' || 'critical' }}"
+          API_TEST_COLOR="${{ steps.statuses.outputs.api_test_status == 'success' && 'success' || 'critical' }}"
+          ITEM_TEST_COLOR="${{ steps.statuses.outputs.item_test_status == 'success' && 'success' || 'critical' }}"
+
+          # Replace the entire table with badges using shields.io
+          awk -v repo="$REPO" -v api_lint="$API_LINT_COLOR" -v item_lint="$ITEM_LINT_COLOR" -v api_test="$API_TEST_COLOR" -v item_test="$ITEM_TEST_COLOR" '
           BEGIN { in_table = 0 }
 
           /^## Service Status/ {
@@ -125,8 +141,8 @@ jobs:
             print ""
             print "| Service      | Tests                                                                                            | Lint                                                                                            |"
             print "| ------------ | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |"
-            print "| API Service  | [![API Tests](https://github.com/" repo "/actions/workflows/ci.yml/badge.svg?event=push&job=test-api)](https://github.com/" repo "/actions/workflows/ci.yml) | [![API Lint](https://github.com/" repo "/actions/workflows/ci.yml/badge.svg?event=push&job=lint-api)](https://github.com/" repo "/actions/workflows/ci.yml) |"
-            print "| Item Service | [![Item Tests](https://github.com/" repo "/actions/workflows/ci.yml/badge.svg?event=push&job=test-item-service)](https://github.com/" repo "/actions/workflows/ci.yml) | [![Item Lint](https://github.com/" repo "/actions/workflows/ci.yml/badge.svg?event=push&job=lint-item-service)](https://github.com/" repo "/actions/workflows/ci.yml) |"
+            print "| API Service  | [![API Tests](https://img.shields.io/badge/tests-" api_test "-brightgreen)](https://github.com/" repo "/actions/workflows/ci.yml) | [![API Lint](https://img.shields.io/badge/lint-" api_lint "-brightgreen)](https://github.com/" repo "/actions/workflows/ci.yml) |"
+            print "| Item Service | [![Item Tests](https://img.shields.io/badge/tests-" item_test "-brightgreen)](https://github.com/" repo "/actions/workflows/ci.yml) | [![Item Lint](https://img.shields.io/badge/lint-" item_lint "-brightgreen)](https://github.com/" repo "/actions/workflows/ci.yml) |"
             in_table = 1
             next
           }
@@ -138,18 +154,6 @@ jobs:
           }
 
           !in_table { print $0 }
-
           ' README.md > README.md.new
 
           mv README.md.new README.md
-
-          cat README.md
-
-      - name: Commit README changes
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add README.md
-          git commit -m "Update README badges [skip ci]" || echo "No changes to commit"
-          git push
