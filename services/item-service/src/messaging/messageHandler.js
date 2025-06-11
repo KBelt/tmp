@@ -18,6 +18,9 @@ async function handleMessage(msg) {
   const message =
     data.message || (data.value && data.value.message) || "No message";
 
+  // Add suffix to the name
+  name += " - preview";
+
   // save the item to the database
   try {
     const item = await createItem(name, message);
