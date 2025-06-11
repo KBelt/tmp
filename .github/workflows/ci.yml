@@ -1,0 +1,115 @@
+name: DevOps CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, item-service]
+    name: Lint ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: ./services/${{ matrix.service }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./services/${{ matrix.service }}
+
+      - name: Run ESLint
+        run: npx eslint . --ext .js
+        working-directory: ./services/${{ matrix.service }}
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, item-service]
+    name: Test ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: ./services/${{ matrix.service }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./services/${{ matrix.service }}
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./services/${{ matrix.service }}
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    strategy:
+      matrix:
+        service: [api, item-service]
+    name: Docker build ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build ${{ matrix.service }} image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./services/${{ matrix.service }}
+          push: false
+          load: true
+          tags: ${{ matrix.service }}:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  update-readme-badges:
+    runs-on: ubuntu-latest
+    # will always run regardless of other job outcomes
+    if: always() # This ensures it runs even if previous jobs fail
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Update API README badge
+        run: |
+          echo "# API Service" > ./services/api/README.md
+          echo "" >> ./services/api/README.md
+          # Add specific labels to distinguish between Tests and Lint badges
+          echo "[![API Tests](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=API%20Tests)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/api/README.md
+          echo "[![API Lint](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=API%20Lint)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/api/README.md
+          echo "[![Docker Build](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=Docker%20Build)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/api/README.md
+
+      - name: Update Item Service README badge
+        run: |
+          echo "# Item Service" > ./services/item-service/README.md
+          echo "" >> ./services/item-service/README.md
+          # Add specific labels to distinguish between Tests and Lint badges
+          echo "[![Item Service Tests](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=Item%20Service%20Tests)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/item-service/README.md
+          echo "[![Item Service Lint](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=Item%20Service%20Lint)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/item-service/README.md
+          echo "[![Docker Build](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg?label=Docker%20Build)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)" >> ./services/item-service/README.md
+
+      - name: Commit README changes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./services/*/README.md
+          git commit -m "Update README badges [skip ci]" || echo "No changes to commit"
+          git push
