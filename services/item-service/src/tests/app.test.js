@@ -117,14 +117,13 @@ describe("Message Handler", () => {
       // Create an invalid JSON string that will cause JSON.parse to throw
       const mockMessage = "this is not valid JSON";
 
-      // Act
-      try {
+      // Act & Assert
+      await expect(async () => {
         await handleMessage(mockMessage);
-        fail("Expected an error to be thrown");
-      } catch (err) {
-        // Assert error is a SyntaxError from JSON parsing
-        expect(err instanceof SyntaxError).toBe(true);
-      }
+      }).rejects.toThrow(SyntaxError);
+
+      // Verify error was logged
+      expect(console.error).toHaveBeenCalled();
 
       // Restore console.error
       console.error.mockRestore();
