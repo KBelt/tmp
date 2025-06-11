@@ -4,12 +4,13 @@ Karsten Belt's submission for DevOps
 
 ## Service Status
 
-| Service      | Tests                                                                                            | Lint                                                                                            |
-| ------------ | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| API Service  | [![API Tests](https://github.com/KBelt/tmp/actions/workflows/ci.yml/badge.svg?event=push&job=test-api)](https://github.com/KBelt/tmp/actions/workflows/ci.yml) | [![API Lint](https://github.com/KBelt/tmp/actions/workflows/ci.yml/badge.svg?event=push&job=lint-api)](https://github.com/KBelt/tmp/actions/workflows/ci.yml) |
-| Item Service | [![Item Tests](https://github.com/KBelt/tmp/actions/workflows/ci.yml/badge.svg?event=push&job=test-item-service)](https://github.com/KBelt/tmp/actions/workflows/ci.yml) | [![Item Lint](https://github.com/KBelt/tmp/actions/workflows/ci.yml/badge.svg?event=push&job=lint-item-service)](https://github.com/KBelt/tmp/actions/workflows/ci.yml) |
+| Service      | Tests                                                                                                                                                                 | Lint                                                                                                                                                                 |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API Service  | [![API Tests](https://github.com/KBelt/tmp/actions/workflows/api-test.yml/badge.svg)](https://github.com/KBelt/tmp/actions/workflows/api-test.yml)                    | [![API Lint](https://github.com/KBelt/tmp/actions/workflows/api-lint.yml/badge.svg)](https://github.com/KBelt/tmp/actions/workflows/api-lint.yml)                    |
+| Item Service | [![Item Tests](https://github.com/KBelt/tmp/actions/workflows/item-service-test.yml/badge.svg)](https://github.com/KBelt/tmp/actions/workflows/item-service-test.yml) | [![Item Lint](https://github.com/KBelt/tmp/actions/workflows/item-service-lint.yml/badge.svg)](https://github.com/KBelt/tmp/actions/workflows/item-service-lint.yml) |
 
 ## Architecture
+
 ## Architecture
 
 - API service: Handles HTTP requests and publishes messages
