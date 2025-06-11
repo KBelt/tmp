@@ -6,8 +6,8 @@ Karsten Belt's submission for DevOps
 
 | Service      | Tests                                                                                            | Lint                                                                                            |
 | ------------ | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| API Service  | ![Tests](https://github.com/Avans/devops-opdracht-2425-KBelt/actions/workflows/ci.yml/badge.svg) | ![Lint](https://github.com/Avans/devops-opdracht-2425-KBelt/actions/workflows/ci.yml/badge.svg) |
-| Item Service | ![Tests](https://github.com/Avans/devops-opdracht-2425-KBelt/actions/workflows/ci.yml/badge.svg) | ![Lint](https://github.com/Avans/devops-opdracht-2425-KBelt/actions/workflows/ci.yml/badge.svg) |
+| API Service  | [![API Lint](https://github.com/KBelt/tmp/actions/workflows/ci.yml/badge.svg)](https://github.com/KBelt/tmp/actions/workflows/ci.yml) 
+| Item Service | [![Item Lint](https://github.com/KBelt/tmp/actions/workflows/ci.yml/badge.svg)](https://github.com/KBelt/tmp/actions/workflows/ci.yml) 
 
 ## Architecture
 
