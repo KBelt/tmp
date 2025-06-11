@@ -25,15 +25,34 @@ jobs:
       - name: Generate Random Password
         id: password
         run: |
-          RANDOM_PASSWORD=$(openssl rand -base64 12 | tr -d '/+=' | head -c 16)
+          # Generate password without special characters
+          RANDOM_PASSWORD=$(openssl rand -hex 16)
           echo "PASSWORD=$RANDOM_PASSWORD" >> $GITHUB_OUTPUT
+
+      - name: Debug YAML
+        env:
+          ORIGINAL_YAML: ${{ needs.load-artifact-from-reusable.outputs.bunnyshell-yaml-contents }}
+        run: |
+          # Decode the base64 encoded YAML for debugging
+          echo "$ORIGINAL_YAML" | base64 -d > original-bunnyshell.yaml
+          cat original-bunnyshell.yaml
 
       - name: Modify Bunnyshell YAML
         id: modify-yaml
         env:
           ORIGINAL_YAML: ${{ needs.load-artifact-from-reusable.outputs.bunnyshell-yaml-contents }}
         run: |
-          echo "$ORIGINAL_YAML" | sed "s|{{ env.MONGO_PASSWORD }}|${{ steps.password.outputs.PASSWORD }}|g" > modified-bunnyshell.yaml
+          # First decode the base64 encoded YAML
+          echo "$ORIGINAL_YAML" | base64 -d > temp-bunnyshell.yaml
+
+          # Then replace the placeholder with the password
+          cat temp-bunnyshell.yaml | sed "s|{{ env.MONGO_PASSWORD }}|${{ steps.password.outputs.PASSWORD }}|g" > modified-bunnyshell.yaml
+
+          # Debug the modified YAML
+          echo "Modified YAML:"
+          cat modified-bunnyshell.yaml
+
+          # Encode it back to base64
           MODIFIED_YAML=$(cat modified-bunnyshell.yaml | base64 -w 0)
           echo "yaml=$MODIFIED_YAML" >> $GITHUB_OUTPUT
 
